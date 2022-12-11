@@ -149,21 +149,143 @@ subplot(347); imshow(can_ed);
 subplot(348);
 imshow(can_fi);
 
+
 % laplacian
 mask_la4 = [0 1 0; 1 -4 1; 0 1 0]
 mask_la8 = [1 1 1; 1 -8 1; 1 1 1]
 
-mask_4 = im_noise * mask_la4;
-mask_8 = im_noise * mask_la8;
+%mask_4 = im_noise * mask_la4;
+%mask_8 = im_noise * mask_la8;
+a1=conv2(g1,mask_la4,'same');
+a2=uint8(a1);
 
-imshow(mask_4);
+subplot(3,4,10);
+imshow(abs(g1-a2),[]);
+title('Laplacian 4 connectivity')
+
 
 % high boost filter
+k =8;
+diff = g1-im_noise_1;
+masked = g1 + (diff*k);
+subplot(3,4,11)
+imshow(masked);
+title('High boost Filter')
 
-%average 
-%sub strtatct form noisy - edge 
-%noisy + edge = sharp img ( edge is added) 
 
+
+%Morphological Opreations
+clc;
+close all;
+clear all;
+
+myorigimg = imread('test.jpg');
+myorigimg = im2bw(rgb2gray(myorigimg));
+subplot(3, 3, 1);
+imshow(myorigimg); title('Original image');
+
+se = strel('disk', 9);
+
+mydilatedimg = imdilate(myorigimg, se);
+subplot(3, 3, 2);
+imshow(mydilatedimg);title('Dilated image');
+
+myerodedimg = imerode(myorigimg, se);
+subplot(3, 3, 3);
+imshow(myerodedimg); title('Eroded image');
+
+internalboundimg = mydilatedimg & ~ myerodedimg;
+subplot(3, 3, 4);
+imshow(internalboundimg, [] ); title('Internal boundary');
+
+externalboundimg = mydilatedimg & ~myorigimg;
+subplot(3, 3, 5);
+imshow(externalboundimg, []); title('External boundary');
+
+mymorphgradimg = imsubtract(myorigimg, myerodedimg);
+subplot(3, 3, 6);
+imshow(mymorphgradimg, []);title('Morphological gradient');
+
+thinf = bwmorph(myorigimg, 'thin');
+subplot(3, 3, 7);
+imshow(thinf); title('Thinning of the image');
+
+thickf = bwmorph(myorigimg, 'thicken');
+subplot(3, 3, 8);
+imshow(thickf); title('Thickening of the image');
+
+skelf100 = bwmorph(myorigimg, 'skel', 9);
+subplot(3, 3, 9);
+imshow(skelf100); title('Skeletonization - 9 iterations');
+
+% Segmentation
+
+clc;
+close all;
+clear all;
+a= imread('sharp3.jpg');
+a = rgb2gray(a);
+subplot(3,3,1);
+imshow(a); title('Original image');
+
+level =0.3;
+
+subplot(3,3,2);
+segimage1 = im2bw(a,level);
+imshow(segimage1); title('Simple thresholding at 0.3 ' );
+
+subplot(3,3,3);
+imshow(a>153); title('Simple thresholding at 0.6 ');
+
+tmp=a;
+[m n]= find (a<26);
+for j=1 : length (m)
+tmp(m(j),n(j)) = 0;
+end
+[m n]= find (a>26&a<=230);
+for j=1 : length (m)
+tmp(m(j),n(j)) = 0.8;
+end
+[m n]= find (a>230);
+for j=1 : length(m)
+tmp(m(j), (j))=0;
+end
+subplot( 3,3,4);
+segimage2 = im2bw(tmp,0);
+imshow(segimage2);
+title('Multiple threshoding(between 27-30) ');
+
+level = graythresh(a);
+
+subplot( 3,3,5);
+segimage = im2bw(a, level);
+imshow(segimage); title('Otsu - optimal segmented image');
+
+b = imread('bluredtext.png');
+subplot( 3,3,6);
+imshow(b); title('Badly illuminated image');
+level = graythresh(b);
+subplot(3,3,7);
+segimage = im2bw(b, level);
+imshow(segimage); title('Otsu - Segmentation for bad illuminated image');
+b= imread('bluredtext.png');
+b= rgb2gray(b);
+
+avgfilt = ones(13,13);
+adaptfiltmask = avgfilt/sum(avgfilt);
+im = imfilter(b, adaptfiltmask, 'replicate');
+
+im1 = medfilt2(b, [20 20]);
+
+thresh = im +18;
+adaptthreshimg = b - thresh;
+subplot(3, 3, 8);
+imshow(adaptthreshimg >0); title('Adaptive threshold = 18');
+
+thresh1 = im1 +2;
+adaptthreshimg = b - thresh1 ;
+subplot(3,3,9);
+imshow(adaptthreshimg>0); title('Adaptive threshold = 2');
 
 
 
