@@ -1,0 +1,176 @@
+clc;
+clear all;
+img = imread('group.jpg');
+info = imfinfo('group.jpg');
+grey = rgb2gray(img);
+bw = im2bw(img);
+hist_slide = grey - 70;
+[eq T] = histeq(grey);
+
+subplot(2,3,1);subimage(img);
+subplot(2,3,2);subimage(grey + 70);
+subplot(2,3,3);subimage(grey - 70);
+subplot(2,3,4);subimage(grey* 2);
+subplot(2,3,5);subimage(grey* 2/3);
+subplot(2,3,6);subimage((3*grey -70)/2+50);
+
+% IMAGES
+img2 = imread('rice.jpg');
+grey2 = rgb2gray(img2);
+grey1 = imresize(grey1 ,[314,236]);
+
+sum = grey1 +  grey2;
+imshow(sum)
+
+% Count no of Rice
+
+clc
+clear all;
+org = imread('rice.jpg');
+level = graythresh(org);
+grey = rgb2gray(org);
+bw = im2bw(grey, level);
+[level1 ,no1] = bwlabel(bw , 4);
+no1
+[level1 ,no2] = bwlabel(bw , 8);
+no2
+
+% Resize
+img = imread('group.jpg');
+info = imfinfo('group.jpg');
+grey = rgb2gray(img);
+imshow(img);
+size(img);
+res1 = imresize(img,0.5);
+res2 = imresize(imresize(img,0.5),2);
+res3 = imresize(grey,[256,256]);
+
+% Contrast Streching
+org = imread('face.jpg');
+g1 = rgb2gray(org);
+%contrast stretching
+contrast_st = imadjust(g1,stretchlim(g1),[]);
+% power law transform
+gamma1 = 4;
+c1 = 255/((255)^gamma1);
+im1 = c1*g1.^gamma1;
+
+gamma2 = 5;
+c2 = 255/((255)^gamma2);
+im2 = c2*g1.^gamma2;
+
+% log transform
+c3 = 255/log(256);
+im3 = c3*log(double(g1+1));
+
+
+% Filter
+% spatial domain filtering
+
+%% Smoothing Filtering
+img = imread('group.jpg');
+g1 = rgb2gray(img);
+im_noise = imnoise(g1,'salt & pepper',0.1);
+im_noise_1 = imnoise(g1,'gaussian',0 , 0.1);
+im_noise_2 = imnoise(g1,'speckle');
+subplot(3,3,1); subimage(im_noise);
+subplot(3,3,2); subimage(im_noise_1);
+subplot(3,3,3); subimage(im_noise_2);
+
+% Average for 7x7 mask
+mask_a = ones(7,7);
+m_a = mask_a/sum(sum(mask_a))
+con_a = conv2( double(im_noise),double(m_a) );
+figure;
+subplot(3,3,4);
+imshow(con_a,[]);
+figure;
+imshow(g1);
+% Weighted Average for 5x5 mask
+clc;
+clear all;
+w=[1 2 3 2 1]; % According to mask (inc then dec)
+mask_wa = w'*w;
+wef = mask_wa/sum(sum(mask_wa));
+con_w = conv2( double(im_noise),double(wef) );
+figure;
+subplot(3,3,5);
+imshow(con_w,[]);
+figure;
+imshow(g1);
+figure;
+imshow(con_a,[]);
+
+% Median
+mef = medfilt2(double(im_noise),[7 7]);
+figure;
+subplot(3,3,6);
+imshow(mef,[]);
+
+% Min and Max
+
+maxf = ordfilt2(im_noise , 5*5 , ones(5,5) );
+minf = ordfilt2(im_noise , 1*1 , ones(5,5) );
+subplot(3,3,7);
+imshow(maxf,[]);
+subplot(3,3,8);
+imshow(minf,[]);
+
+% Mid point
+midf =( maxf + minf )/2;
+subplot(3,3,9);
+imshow(midf,[]);
+
+
+%% Sharpening filter - 1st order, laplacian, high boost filter
+clc;
+clear all;
+img = imread('sharp3.jpg');
+g1 = rgb2gray(img);
+im_noise = imnoise(g1,'salt & pepper',0.1);
+% edge detection
+% robert
+rob_ed = edge(im_noise,'roberts');
+pre_ed = edge(im_noise,'prewitt');
+sob_ed = edge(im_noise,'sobel');
+can_ed = edge(im_noise,'canny');
+rob_fi = im2bw(im_noise) - rob_ed;
+pre_fi = im2bw(im_noise) - pre_ed;
+sob_fi = im2bw(im_noise) - sob_ed;
+can_fi = im2bw(im_noise) - can_ed;
+
+subplot(341); imshow(rob_ed,[]);
+subplot(342); imshow(rob_fi,[]);
+subplot(343); imshow(pre_ed);
+subplot(344); imshow(pre_fi);
+subplot(345); imshow(sob_ed);
+subplot(346); imshow(sob_fi);
+subplot(347); imshow(can_ed);
+subplot(348);
+imshow(can_fi);
+
+% laplacian
+mask_la4 = [0 1 0; 1 -4 1; 0 1 0]
+mask_la8 = [1 1 1; 1 -8 1; 1 1 1]
+
+mask_4 = im_noise * mask_la4;
+mask_8 = im_noise * mask_la8;
+
+imshow(mask_4);
+
+% high boost filter
+
+%average 
+%sub strtatct form noisy - edge 
+%noisy + edge = sharp img ( edge is added) 
+
+
+
+
+
+
+
+
+
+
+
